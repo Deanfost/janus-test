@@ -9,10 +9,6 @@ class RemoteFeed extends React.Component {
         video.srcObject = this.props.stream;
     }
 
-    componentDidUpdate() {
-        console.log('Updated!');
-    }
-
     render() {
         return (
             <Row>

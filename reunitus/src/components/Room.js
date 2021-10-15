@@ -300,7 +300,6 @@ class Room extends React.Component {
                 // The rtc sub connection has been closed
                 console.log(`Subscription connection closed! id: ${id}, display: ${display}`);
                 const newList = this.state.remoteStreamObjs.filter(o => o.id != id);
-                console.log('new state list', newList);
                 this.setState({remoteStreamObjs: newList});
             }
         });
