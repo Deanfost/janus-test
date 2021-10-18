@@ -1,5 +1,7 @@
 # janus-test
 
+This branch is modified to work on the Vacillate VM provisioned for the Decidio team. It uses SSL termination on WSS by virtue of the node-http-proxy. All services but Janus use a self-signed SSL certificate. **The Janus instance is not configured to refuse HTTP or normal WS requests/connections. However all requests made by the client and express server should go through the proxy.**
+
 A test app for the Janus WebRTC server. Contains a Fedora dockerfile for a Janus container, and a simple express api server. In addition, original source code for reunitus react app taken from 
 https://github.com/agonza1/reunitus.
 
