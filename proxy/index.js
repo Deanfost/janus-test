@@ -10,3 +10,11 @@ httpProxy.createServer({
         cert: fs.readFileSync(path.join('..', 'certs', 'localhost.crt'))
     }
 }).listen(7000);
+
+httpProxy.createProxyServer({
+    target: 'http://vacillate.cs.umd.edu:8088/janus',
+    ssl: {
+        key: fs.readFileSync(path.join('..', 'certs', 'localhost.key')),
+        cert: fs.readFileSync(path.join('..', 'certs', 'localhost.crt'))
+    }
+}).listen(7001);
