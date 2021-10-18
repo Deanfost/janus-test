@@ -5,7 +5,7 @@ import {Container, Row, Col} from 'react-bootstrap'
 import RemoteFeed from './RemoteFeed';
 import Janus from './Janus.js';
 
-const server = "ws://localhost:8188/janus";
+const server = "wss://vacillate.cs.umd.edu:7000"; // THIS IS THE PROXY ADDRESS
 const opaqueId = Janus.randomString();
 let janus = null; // The main object for interaction with Janus
 let vrHandle = null; // The main object for interaction with VideoRoom plugin

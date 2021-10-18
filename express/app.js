@@ -6,7 +6,7 @@ import Janus from 'janus-room/janus.js';
 import fetch from 'node-fetch';
 import cors from 'cors';
 
-const janusURL = 'http://localhost:8088/janus';
+const janusURL = 'http://vacillate.cs.umd.edu:8088/janus';
 
 var app = express();
 

@@ -6,8 +6,11 @@
 
 import app from '../app.js';
 import debuglib from 'debug';
+import fs from 'fs';
+import path from 'path';
 var debug = debuglib('express:server');
-import http from 'http';
+// import http from 'http';
+import https from 'https';
 
 /**
  * Get port from environment and store in Express.
@@ -17,10 +20,14 @@ var port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
 
 /**
- * Create HTTP server.
+ * Create HTTPS server.
  */
 
-var server = http.createServer(app);
+const cert = fs.readFileSync(path.join(process.cwd(), '..', 'certs', 'localhost.crt'));
+const key = fs.readFileSync(path.join(process.cwd(), '..', 'certs', 'localhost.key'));
+const options = { cert, key };
+var server = https.createServer(options, app);
+
 
 /**
  * Listen on provided port, on all network interfaces.
