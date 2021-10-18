@@ -1,6 +1,7 @@
 var httpProxy = require('http-proxy');
 var fs = require('fs');
 var path = require('path');
+var cors = require('cors');
 
 httpProxy.createServer({
     target: 'ws://vacillate.cs.umd.edu:8188/janus',
@@ -17,4 +18,6 @@ httpProxy.createProxyServer({
         key: fs.readFileSync(path.join('..', 'certs', 'localhost.key')),
         cert: fs.readFileSync(path.join('..', 'certs', 'localhost.crt'))
     }
-}).listen(7001);
+}).listen(7001).on('proxyRes', (proxyRes, req, res) => {
+    cors()(req, res, () => { });
+});
