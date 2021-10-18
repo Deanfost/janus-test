@@ -7,7 +7,7 @@ services:
   # janus-gateway
   #
   janus-gateway:
-    image: 'canyan/janus-gateway:0.10.7'
+    build: '.'
     command: ["/usr/local/bin/janus", "-F", "/usr/local/etc/janus"]
     ports:
       - "8188:8188"
