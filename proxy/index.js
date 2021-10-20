@@ -19,5 +19,6 @@ httpProxy.createProxyServer({
         cert: fs.readFileSync(path.join('..', 'certs', 'localhost.crt'))
     }
 }).listen(7001).on('proxyRes', (proxyRes, req, res) => {
-    cors()(req, res, () => { });
+    proxyRes.headers["access-control-allow-origin"] = "*";
+    proxyRes.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
 });

@@ -17,7 +17,8 @@ services:
       - "8000:8000"
       - "7088:7088"
       - "7089:7089"
+      - "10000-10100:10000-10100/udp"
     # volumes:
       # - "./etc/janus/janus.jcfg:/usr/local/etc/janus/janus.jcfg"
       # - "./etc/janus/janus.eventhandler.sampleevh.jcfg:/usr/local/etc/janus/janus.eventhandler.sampleevh.jcfg"
-    restart: always
+    # restart: always
