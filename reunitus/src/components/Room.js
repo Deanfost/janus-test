@@ -74,7 +74,7 @@ class Room extends React.Component {
         // Attach to Janus VideoRoom plugin to get publishing handle
         janus.attach({
             plugin: 'janus.plugin.videoroom',
-            opaqueId,
+            // opaqueId,
             success: this.onPublisherAttachment,
             error: this.onError, 
             consentDialog: this.onMediaDialog, 
@@ -235,7 +235,7 @@ class Room extends React.Component {
         // --- Subscriber step 1 ---
         janus.attach({
             plugin: 'janus.plugin.videoroom',
-            opaqueId,
+            // opaqueId,
             success: subHandle => {
                 // --- Subscriber step 2 ---
                 remoteFeed = subHandle;
