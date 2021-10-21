@@ -15,7 +15,7 @@ class App extends React.Component {
 
 	async componentDidMount() {
 		try {
-			let result = await fetch('https://vacillate.cs.umd.edu:3001/list-rooms', {
+			let result = await fetch('https://vacillate.cs.umd.edu:3001/list-rooms', { // Express api
 				method: 'GET'
 			});
 			let body = await result.json();
