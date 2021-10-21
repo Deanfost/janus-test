@@ -5,8 +5,9 @@ import logger from 'morgan';
 import Janus from 'janus-room/janus.js';
 import fetch from 'node-fetch';
 import cors from 'cors';
+import https from 'https';
 
-const janusURL = 'http://localhost:8088/janus';
+const janusURL = 'https://localhost:7001/janus'; // PROXY ADDRESS FOR JANUS HTTP (actual: http://localhost:8088)
 
 var app = express();
 
@@ -15,6 +16,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors());
+
+// USE THIS FOR ALL FETCH CALLS, it allows for self-signed certs
+const httpsAgent = new https.Agent({
+	rejectUnauthorized: false
+});
 
 // API routes
 app.post('/create-room/:roomID', async function (req, res, next) {
@@ -25,6 +31,7 @@ app.post('/create-room/:roomID', async function (req, res, next) {
 	try {
 		let result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'Create',
 				transaction: Janus.randomString()
@@ -34,10 +41,12 @@ app.post('/create-room/:roomID', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const sessionId = body['data']['id'];
 		endpoint += '/' + sessionId; // http://localhost:8088/janus/<sessionid>
+		const sessionEndpoint = endpoint;
 
 		// Attach session to videoroom plugin
 		result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'attach',
 				plugin: 'janus.plugin.videoroom',
@@ -52,18 +61,34 @@ app.post('/create-room/:roomID', async function (req, res, next) {
 		// Fetch a create request for the session
 		result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'message',
 				transaction: Janus.randomString(),
 				body: {
 					request: 'create',
-					room: roomID
+					room: roomID,
+					publishers: 20,
+					bitrate: 1000, // 480p
+					bitrate_cap: true,
+					fir_freq: 10,
+					audiolevel_event: true, // Tell subs that a person is speaking
 				}
 			})
 		});
 		body = await result.json();
 		if (body['janus'] != 'success') return next(body);
 		const room = body['plugindata']['data'];
+
+		// Destroy current session
+		await fetch(sessionEndpoint, {
+			method: 'POST',
+			agent: httpsAgent, 
+			body: JSON.stringify({
+				"janus" : "destroy",
+        		"transaction" : Janus.randomString()
+			})
+		});
 
 		// send response
 		res.json(room);
@@ -81,6 +106,7 @@ app.delete('/destroy-room/:roomID', async function (req, res, next) {
 	try {
 		let result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'Create',
 				transaction: Janus.randomString()
@@ -90,10 +116,12 @@ app.delete('/destroy-room/:roomID', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const sessionId = body['data']['id'];
 		endpoint += '/' + sessionId; // http://localhost:8088/janus/<sessionid>
+		const sessionEndpoint = endpoint;
 
 		// Attach session to videoroom plugin
 		result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'attach',
 				plugin: 'janus.plugin.videoroom',
@@ -108,6 +136,7 @@ app.delete('/destroy-room/:roomID', async function (req, res, next) {
 		// Fetch a create request for the session
 		result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'message',
 				transaction: Janus.randomString(),
@@ -120,6 +149,16 @@ app.delete('/destroy-room/:roomID', async function (req, res, next) {
 		body = await result.json();
 		if (body['janus'] != 'success') return next(body);
 		const room = body['plugindata']['data'];
+
+		// Destroy current session
+		await fetch(sessionEndpoint, {
+			method: 'POST',
+			agent: httpsAgent, 
+			body: JSON.stringify({
+				"janus" : "destroy",
+        		"transaction" : Janus.randomString()
+			})
+		});
 
 		// send response
 		res.json(room);
@@ -135,6 +174,7 @@ app.get('/list-rooms', async function (req, res, next) {
 		// Find existing rooms; create new session
 		let result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'Create',
 				transaction: Janus.randomString()
@@ -144,10 +184,12 @@ app.get('/list-rooms', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const sessionId = body['data']['id'];
 		endpoint += '/' + sessionId; // http://localhost:8088/janus/<sessionid>
+		const sessionEndpoint = endpoint;
 
 		// Attach session to videoroom plugin
 		result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'attach',
 				plugin: 'janus.plugin.videoroom',
@@ -162,6 +204,7 @@ app.get('/list-rooms', async function (req, res, next) {
 		// List created rooms; talk to video room plugin
 		result = await fetch(endpoint, {
 			method: 'POST',
+			agent: httpsAgent,
 			body: JSON.stringify({
 				janus: 'message',
 				transaction: Janus.randomString(),
@@ -174,6 +217,16 @@ app.get('/list-rooms', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const rooms = body['plugindata']['data']['list'];
 
+		// Destroy current session
+		await fetch(sessionEndpoint, {
+			method: 'POST',
+			agent: httpsAgent, 
+			body: JSON.stringify({
+				"janus" : "destroy",
+        		"transaction" : Janus.randomString()
+			})
+		});
+
 		// Send response
 		res.json(rooms);
 	} catch (err) {
@@ -183,12 +236,3 @@ app.get('/list-rooms', async function (req, res, next) {
 });
 
 export default app;
-// //Start server
-// var port = 5000;
-// app.listen(port, function () {
-// 	console.log(
-// 		'Express server listening on port %d in %s mode',
-// 		port,
-// 		app.settings.env
-// 	);
-// });
