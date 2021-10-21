@@ -41,6 +41,7 @@ app.post('/create-room/:roomID', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const sessionId = body['data']['id'];
 		endpoint += '/' + sessionId; // http://localhost:8088/janus/<sessionid>
+		const sessionEndpoint = endpoint;
 
 		// Attach session to videoroom plugin
 		result = await fetch(endpoint, {
@@ -75,6 +76,16 @@ app.post('/create-room/:roomID', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const room = body['plugindata']['data'];
 
+		// Destroy current session
+		await fetch(sessionEndpoint, {
+			method: 'POST',
+			agent: httpsAgent, 
+			body: JSON.stringify({
+				"janus" : "destroy",
+        		"transaction" : Janus.randomString()
+			})
+		});
+
 		// send response
 		res.json(room);
 	} catch (error) {
@@ -101,6 +112,7 @@ app.delete('/destroy-room/:roomID', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const sessionId = body['data']['id'];
 		endpoint += '/' + sessionId; // http://localhost:8088/janus/<sessionid>
+		const sessionEndpoint = endpoint;
 
 		// Attach session to videoroom plugin
 		result = await fetch(endpoint, {
@@ -134,6 +146,16 @@ app.delete('/destroy-room/:roomID', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const room = body['plugindata']['data'];
 
+		// Destroy current session
+		await fetch(sessionEndpoint, {
+			method: 'POST',
+			agent: httpsAgent, 
+			body: JSON.stringify({
+				"janus" : "destroy",
+        		"transaction" : Janus.randomString()
+			})
+		});
+
 		// send response
 		res.json(room);
 	} catch (error) {
@@ -158,6 +180,7 @@ app.get('/list-rooms', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const sessionId = body['data']['id'];
 		endpoint += '/' + sessionId; // http://localhost:8088/janus/<sessionid>
+		const sessionEndpoint = endpoint;
 
 		// Attach session to videoroom plugin
 		result = await fetch(endpoint, {
@@ -190,6 +213,16 @@ app.get('/list-rooms', async function (req, res, next) {
 		if (body['janus'] != 'success') return next(body);
 		const rooms = body['plugindata']['data']['list'];
 
+		// Destroy current session
+		await fetch(sessionEndpoint, {
+			method: 'POST',
+			agent: httpsAgent, 
+			body: JSON.stringify({
+				"janus" : "destroy",
+        		"transaction" : Janus.randomString()
+			})
+		});
+
 		// Send response
 		res.json(rooms);
 	} catch (err) {
@@ -199,12 +232,3 @@ app.get('/list-rooms', async function (req, res, next) {
 });
 
 export default app;
-// //Start server
-// var port = 5000;
-// app.listen(port, function () {
-// 	console.log(
-// 		'Express server listening on port %d in %s mode',
-// 		port,
-// 		app.settings.env
-// 	);
-// });
