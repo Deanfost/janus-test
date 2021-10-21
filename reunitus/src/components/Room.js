@@ -4,6 +4,7 @@ import '../App.css';
 import {Container, Row, Col} from 'react-bootstrap'
 import RemoteFeed from './RemoteFeed';
 import Janus from './Janus.js';
+import janus_js from 'janus-gateway-js';
 
 const server = "https://vacillate.cs.umd.edu:7001/janus"; // PROXY ADDRESS FOR JANUS HTTP (actual: http://localhost:8088)
 const opaqueId = Janus.randomString();
@@ -306,6 +307,11 @@ class Room extends React.Component {
         });
     }
     
+    handleDestroySession = () => {
+        console.log('Janus session destroyed');
+        if (janus) janus.destroy();
+    }
+
     render() {
         // Setup local video feed
         const localVideo = document.getElementById('localvideo');
@@ -319,6 +325,7 @@ class Room extends React.Component {
                             <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
                         </div>
                     </div>
+                    <button onClick={this.handleDestroySession}>End Session</button>
                 </header>
                 <h3 id="title"></h3>
                 <Container>
