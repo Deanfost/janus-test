@@ -216,6 +216,7 @@ class Room extends React.Component {
     // Generic error handler for several points
     // here it is only used for the publishing handle
     onError(err) {
+        console.log('On publisher error');
         console.error(err);
     }
 

@@ -71,6 +71,7 @@ app.post('/create-room/:roomID', async function (req, res, next) {
 					publishers: 20,
 					bitrate: 1000, // 480p
 					bitrate_cap: true,
+					fir_freq: 10,
 					audiolevel_event: true, // Tell subs that a person is speaking
 				}
 			})

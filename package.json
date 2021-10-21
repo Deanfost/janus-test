@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "janus-gateway": "^0.2.3"
+  }
+}
