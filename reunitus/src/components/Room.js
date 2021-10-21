@@ -5,7 +5,7 @@ import {Container, Row, Col} from 'react-bootstrap'
 import RemoteFeed from './RemoteFeed';
 import Janus from './Janus.js';
 
-const server = "https://vacillate.cs.umd.edu:7001/janus"; // PROXY ADDRESS FOR JANUS HTTP (actual: http://localhost:8088)
+const server = "ws://localhost:8188/janus";
 const opaqueId = Janus.randomString();
 let janus = null; // The main object for interaction with Janus
 let vrHandle = null; // The main object for interaction with VideoRoom plugin
@@ -74,7 +74,7 @@ class Room extends React.Component {
         // Attach to Janus VideoRoom plugin to get publishing handle
         janus.attach({
             plugin: 'janus.plugin.videoroom',
-            // opaqueId,
+            opaqueId,
             success: this.onPublisherAttachment,
             error: this.onError, 
             consentDialog: this.onMediaDialog, 
@@ -216,7 +216,6 @@ class Room extends React.Component {
     // Generic error handler for several points
     // here it is only used for the publishing handle
     onError(err) {
-        console.log('On publisher error');
         console.error(err);
     }
 
@@ -235,7 +234,7 @@ class Room extends React.Component {
         // --- Subscriber step 1 ---
         janus.attach({
             plugin: 'janus.plugin.videoroom',
-            // opaqueId,
+            opaqueId,
             success: subHandle => {
                 // --- Subscriber step 2 ---
                 remoteFeed = subHandle;
