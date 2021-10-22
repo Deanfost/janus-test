@@ -3,12 +3,14 @@ import '../App.css';
 
 import {Container, Row, Col} from 'react-bootstrap'
 import RemoteFeed from './RemoteFeed';
-import Janus from './Janus.js';
-import janus_js from 'janus-gateway-js';
+import Janus from 'janus-gateway-js';
+import { v4 as uuidv4 } from 'uuid';
 
-const server = "https://vacillate.cs.umd.edu:7001/janus"; // PROXY ADDRESS FOR JANUS HTTP (actual: http://localhost:8088)
-const opaqueId = Janus.randomString();
+const server = "wss://vacillate.cs.umd.edu:7000/janus"; // PROXY ADDRESS FOR JANUS WS (actual: ws://localhost:8188)
+// const opaqueId = Janus.randomString();
 let janus = null; // The main object for interaction with Janus
+let connection = null; // The ws connection with Janus
+let session = null; // The session with Janus
 let vrHandle = null; // The main object for interaction with VideoRoom plugin
 let myid, mypvtid = null;
 
@@ -46,11 +48,39 @@ class Room extends React.Component {
 
     // --- STEP 0 ---
     async componentDidMount() {
-        // Initialize the client library 
-        Janus.init({
-            debug: true, 
-            dependencies: Janus.UseDefaultDependencies(),
-            callback: this.createSession});
+        janus = new Janus.Client(server, {
+            keepalive: 'true'
+        });
+
+        try {
+            // Connect to Janus via ws
+            connection = await janus.createConnection(uuidv4());
+            console.log('CONNECTED to Janus at', connection.getAddress(), 'with WS id', connection.getId());
+
+            // Create session
+            session = await connection.createSession();
+            console.log('SESSION created with id', session.getId());
+            
+            session.on('message', () => {
+                
+            });
+
+            // Attach to VideoRoom plugin (have to get plugin handle id manually for VR plugin)
+            const getHandleRes = await session.send({
+                "janus": "attach", 
+                "plugin": "janus.plugin.videoroom", 
+                "transaction": uuidv4()
+            });
+            console.log(getHandleRes);
+            if (!getHandleRes || getHandleRes['janus'] != 'success') throw 'Could not attach to VideoRoom';
+            vrHandle = new Janus.MediaPlugin(session, 'janus.plugin.videoroom', getHandleRes['data']['id']);
+            console.log(vrHandle);
+            let meme = new Janus.Plugin(session, 'janus.plugin.videoroom', 'da');
+            
+            
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     componentWillUnmount() {
@@ -307,10 +337,10 @@ class Room extends React.Component {
         });
     }
     
-    handleDestroySession = () => {
-        console.log('Janus session destroyed');
-        if (janus) janus.destroy();
-    }
+    // handleDestroySession = () => {
+    //     console.log('Janus session destroyed');
+    //     if (janus) janus.destroy();
+    // }
 
     render() {
         // Setup local video feed
@@ -325,7 +355,7 @@ class Room extends React.Component {
                             <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
                         </div>
                     </div>
-                    <button onClick={this.handleDestroySession}>End Session</button>
+                    {/* <button onClick={this.handleDestroySession}>End Session</button> */}
                 </header>
                 <h3 id="title"></h3>
                 <Container>

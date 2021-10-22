@@ -13,7 +13,10 @@ httpProxy.createServer({
     ssl: {
         key, cert
     }
-}).listen(7000);
+}).listen(7000).on('proxyRes', (proxyRes, req, res) => {
+    proxyRes.headers["access-control-allow-origin"] = "*";
+    proxyRes.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+});
 
 // Proxy to janus http api
 httpProxy.createProxyServer({
