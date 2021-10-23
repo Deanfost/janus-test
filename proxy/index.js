@@ -25,7 +25,10 @@ httpProxy.createProxyServer({
     proxyRes.headers["access-control-allow-origin"] = "*";
     proxyRes.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
 }).on('error', function(e) {
-    console.error('Proxy error:');
+    // NOTE: this fires whenever janus unexpectedly closes the connection
+    // this happens if you destroy a session with handles that are still attached
+    // so the handles' connections are closed unexpectedly 
+    console.error('Proxy error:'); 
     console.error(e);
 });
 
