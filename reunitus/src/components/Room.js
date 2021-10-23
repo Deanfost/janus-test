@@ -5,7 +5,7 @@ import {Container, Row, Col} from 'react-bootstrap'
 import RemoteFeed from './RemoteFeed';
 import Janus from './Janus.js';
 
-const server = "https://vacillate.cs.umd.edu:7001/janus"; // PROXY ADDRESS FOR JANUS HTTP (actual: http://localhost:8088)
+const server = "https://vacillate.cs.umd.edu:8089/janus";
 const opaqueId = Janus.randomString();
 let janus = null; // The main object for interaction with Janus
 let vrHandle = null; // The main object for interaction with VideoRoom plugin
@@ -41,6 +41,7 @@ class Room extends React.Component {
         this.onJanusDestroyed = this.onJanusDestroyed.bind(this);
         this.newRemoteFeed = this.newRemoteFeed.bind(this);
         this.onError = this.onError.bind(this);
+        this.destroySession = this.destroySession.bind(this);
     }
 
     // --- STEP 0 ---
@@ -52,9 +53,9 @@ class Room extends React.Component {
             callback: this.createSession});
     }
 
-    componentWillUnmount() {
-        if (janus) janus.destroy();
-    }
+    // componentWillUnmount() {
+    //     if (janus) janus.destroy();
+    // }
 
     // --- STEP 1 ---
     createSession() {
@@ -167,12 +168,21 @@ class Room extends React.Component {
                         this.newRemoteFeed(id, displayName, audio, video);
                     });
                 } else if(msg['leaving']) {
-                    // One of the publishers is leaving
-                    console.log('A publisher is leaving!');
+                    // One of the publishers is leaving, destroy sub
+                    const id = msg['leaving'];
+                    console.log(`Publisher ${id} is leaving!`);
+                    let subHandle = this.state.remoteStreamObjs.filter(v => v.id == id)[0];
+                    if (!subHandle) return;
+                    subHandle = subHandle.remoteFeed;
+                    subHandle.detach();
                 } else if (msg['unpublished']) {
                     // One of the publishers has unpublished
-                    let leftPublisher = msg['unpublished'];
+                    const leftPublisher = msg['unpublished'];
                     console.log(`Publisher left: ${leftPublisher}`);
+                    let subHandle = this.state.remoteStreamObjs.filter(v => v.id == leftPublisher)[0];
+                    if (!subHandle) return;
+                    subHandle = subHandle.remoteFeed;
+                    subHandle.detach();
                 }
             }
         }
@@ -258,6 +268,7 @@ class Room extends React.Component {
                 console.error('Could not attach subscriber handle:', err);
             },
             onmessage: (msg, jsep) => {
+                console.log('--- NEW MESSAGE on feedid=', id, '--- |', msg);
                 let event = msg['videoroom'];
                 if (event) {
                     if (event === 'attached') {
@@ -292,7 +303,7 @@ class Room extends React.Component {
 
                 // We have received the stream requested, catalog it and do UI housekeeping
                 if (this.state.remoteStreamObjs.filter(o => o.id == id).length != 0) return;
-                const newObj = {id, display, stream};
+                const newObj = {id, display, stream, remoteFeed};
                 let concat = this.state.remoteStreamObjs.concat(newObj);
                 console.log('new state list', concat);
                 this.setState({remoteStreamObjs: concat});
@@ -304,6 +315,11 @@ class Room extends React.Component {
                 this.setState({remoteStreamObjs: newList});
             }
         });
+    }
+
+    destroySession() {
+        console.log('--- Destroying session... --- ');
+        janus.destroy();
     }
     
     render() {
@@ -318,6 +334,7 @@ class Room extends React.Component {
                         <div id="myvideo" className="container shorter">
                             <video id="localvideo" className="rounded centered" width="100%" height="100%" autoPlay playsInline muted="muted"></video>
                         </div>
+                        <button onClick={this.destroySession}>End session</button>
                     </div>
                 </header>
                 <h3 id="title"></h3>

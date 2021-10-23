@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import cors from 'cors';
 import https from 'https';
 
-const janusURL = 'https://localhost:7001/janus'; // PROXY ADDRESS FOR JANUS HTTP (actual: http://localhost:8088)
+const janusURL = 'https://vacillate.cs.umd.edu:8089/janus';
 
 var app = express();
 
