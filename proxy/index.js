@@ -24,6 +24,9 @@ httpProxy.createProxyServer({
 }).listen(7001).on('proxyRes', (proxyRes, req, res) => {
     proxyRes.headers["access-control-allow-origin"] = "*";
     proxyRes.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+}).on('error', function(e) {
+    console.error('Proxy error:');
+    console.error(e);
 });
 
 // Proxy to janus admin api

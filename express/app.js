@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import cors from 'cors';
 import https from 'https';
 
-const janusURL = 'https://vacillate.cs.umd.edu:8089/janus';
+const janusURL = 'https://vacillate.cs.umd.edu:7001/janus';
 
 var app = express();
 
